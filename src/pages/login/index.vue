@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormRules } from "element-plus"
 import type { LoginRequestData } from "./apis/type"
+import { isCancel } from "axios"
 import { useUserStore } from "@/pinia/stores/user"
 import { getCaptchaApi, loginApi } from "./apis"
 
@@ -27,7 +28,8 @@ async function createCode() {
   try {
     const { data } = await getCaptchaApi()
     codeUrl.value = data
-  } catch {
+  } catch (error) {
+    if (isCancel(error)) return
     // 请求层已报告原因，此处提供持续可见的重试入口。
     captchaError.value = "验证码加载失败，请检查后端配置后重试"
   }
@@ -35,23 +37,28 @@ async function createCode() {
 
 async function handleLogin() {
   if (loading.value) return
-  const valid = await loginFormRef.value?.validate().catch(() => false)
-  if (!valid) return
   loading.value = true
+  const version = userStore.getSessionVersion()
   try {
-    const { data } = await loginApi(loginFormData)
-    userStore.setToken(data.token)
-  } catch {
-    // 登录失败保留表单，让用户修改后重试；错误由请求层统一提示。
-    loginFormData.password = ""
-    await createCode()
-    return
+    const valid = await loginFormRef.value?.validate().catch(() => false)
+    if (!valid || version !== userStore.getSessionVersion()) return
+    try {
+      const { data } = await loginApi(loginFormData)
+      if (version !== userStore.getSessionVersion()) return
+      userStore.setToken(data.token)
+    } catch (error) {
+      if (isCancel(error) || version !== userStore.getSessionVersion()) return
+      // 登录失败保留表单，让用户修改后重试；错误由请求层统一提示。
+      loginFormData.password = ""
+      await createCode()
+      return
+    }
+    // Vue Router 已解码查询参数；只接受站内路径，不再次 decodeURIComponent。
+    const redirect = route.query.redirect
+    await router.replace(typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/")
   } finally {
     loading.value = false
   }
-  // Vue Router 已解码查询参数；只接受站内路径，不再次 decodeURIComponent。
-  const redirect = route.query.redirect
-  await router.replace(typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/")
 }
 
 onMounted(createCode)
