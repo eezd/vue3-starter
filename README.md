@@ -9,6 +9,8 @@ A general frontend starter simplified from V3 Admin Vite, using Vue 3, TypeScrip
 - A minimal home page, one permission example and 403/404 pages.
 - Small pagination, async select, fullscreen loading and page-title composables.
 
+Async selects expose the original loading failure through `error`, distinguishing failure from a successful empty list; the HTTP layer owns request notifications.
+
 The starter has no admin shell, sidebar, tabs, layout settings, theme switching, promotional notifications or CRUD showcase. Registration is not implemented.
 
 ## Development

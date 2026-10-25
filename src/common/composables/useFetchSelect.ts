@@ -25,20 +25,25 @@ export function useFetchSelect(props: FetchSelectProps) {
 
   const value = ref<OptionValue>("")
 
+  const error = shallowRef<unknown>()
+
   // 调用接口获取数据
-  const loadData = () => {
+  const loadData = async () => {
     loading.value = true
+    error.value = undefined
     options.value = []
-    api().then((res) => {
+    try {
+      const res = await api()
       options.value = res.data
-    }).finally(() => {
+    } catch (cause) {
+      // 请求层负责提示，这里保留失败状态，供页面区分失败与空列表。
+      error.value = cause
+    } finally {
       loading.value = false
-    })
+    }
   }
 
-  onMounted(() => {
-    loadData()
-  })
+  onMounted(loadData)
 
-  return { loading, options, value }
+  return { loading, options, value, error }
 }
