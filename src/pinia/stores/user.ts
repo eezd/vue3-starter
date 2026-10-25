@@ -1,9 +1,14 @@
 import { getCurrentUserApi } from "@@/apis/users"
 import { setToken as _setToken, getToken, removeToken } from "@@/utils/local-storage"
+import { CanceledError } from "axios"
 import { resetRouter, router } from "@/router"
 import { usePermissionStore } from "./permission"
 
 export const useUserStore = defineStore("user", () => {
+  // Token 可能复用，使用会话代号区分退出后重新登录的异步结果。
+  let sessionVersion = 0
+  const getSessionVersion = () => sessionVersion
+
   const token = ref<string>(getToken() || "")
 
   const roles = ref<string[]>([])
@@ -16,19 +21,24 @@ export const useUserStore = defineStore("user", () => {
 
   // 设置 Token
   const setToken = (value: string) => {
+    resetToken()
     _setToken(value)
     token.value = value
   }
 
   // 获取用户详情
   const getInfo = async () => {
+    const version = sessionVersion
     const { data } = await getCurrentUserApi()
+    if (version !== sessionVersion) throw new CanceledError("会话已变化")
     // 用户信息是权限边界；必需字段错误时拒绝登录，不伪造空角色。
     if (!data || typeof data.username !== "string"
       || !Array.isArray(data.roles) || data.roles.some(role => typeof role !== "string")
       || (data.permissions !== undefined
         && (!Array.isArray(data.permissions) || data.permissions.some(permission => typeof permission !== "string")))) {
-      throw new Error("用户信息格式错误")
+      const error = new Error("用户信息格式错误")
+      ElMessage.error(error.message)
+      throw error
     }
     username.value = data.username
     roles.value = data.roles
@@ -46,6 +56,7 @@ export const useUserStore = defineStore("user", () => {
 
   // 重置 Token
   const resetToken = () => {
+    sessionVersion++
     removeToken()
     token.value = ""
     roles.value = []
@@ -56,5 +67,5 @@ export const useUserStore = defineStore("user", () => {
     usePermissionStore().resetRoutes()
   }
 
-  return { token, roles, permissions, username, isGotUserInfo, setToken, getInfo, logout, resetToken }
+  return { token, roles, permissions, username, isGotUserInfo, getSessionVersion, setToken, getInfo, logout, resetToken }
 })

@@ -1,6 +1,7 @@
 import type { Router } from "vue-router"
 import { useTitle } from "@@/composables/useTitle"
 import { getToken } from "@@/utils/local-storage"
+import { isCancel } from "axios"
 import NProgress from "nprogress"
 import { usePermissionStore } from "@/pinia/stores/permission"
 import { useUserStore } from "@/pinia/stores/user"
@@ -31,8 +32,10 @@ export function registerNavigationGuard(router: Router) {
     // 如果用户已经获得其权限信息
     if (userStore.isGotUserInfo) return true
     // 否则要重新获取权限信息
+    const version = userStore.getSessionVersion()
     try {
       await userStore.getInfo()
+      if (version !== userStore.getSessionVersion()) return false
       // 注意：角色和权限必须是数组！ 例如: ["admin"] 或 ["permission:page-level"]
       const { roles, permissions } = userStore
       // 生成可访问的 Routes
@@ -43,9 +46,9 @@ export function registerNavigationGuard(router: Router) {
       // 首次匹配可能落在 404，按路径重匹配，不能沿用旧 name/params。
       return { path: to.path, query: to.query, hash: to.hash, replace: true }
     } catch (error) {
-      // 过程中发生任何错误，都直接重置 Token，并重定向到登录页面
+      // 旧导航或主动取消不能清理已经开始的新会话。
+      if (isCancel(error) || version !== userStore.getSessionVersion()) return false
       userStore.resetToken()
-      ElMessage.error((error as Error).message || "路由守卫发生错误")
       return LOGIN_PATH
     }
   })

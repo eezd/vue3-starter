@@ -49,7 +49,8 @@ VITE_PROXY_TARGET=http://127.0.0.1:8080
 | `GET /api/v1/users/me`     | Bearer Token                   | `{ username: string, roles: string[], permissions?: string[] }` |
 
 以上是继承的模板契约；接入不同后端时同步修改对应 API、类型及调用方。登录密码不预设演示长度限制，具体规则由后端决定。
-HTTP 401 或业务 code 401 会清空认证、移除动态路由、跳转登录页，并使请求失败。
+当前会话的 HTTP 401 或业务 code 401 会清空认证、移除动态路由、跳转登录页，并使请求失败。
+退出或重新登录后，旧请求按 Axios 取消语义拒绝，不覆盖新身份、不提示旧错误或注销新会话；主动取消同样不弹错误。
 
 默认首页为 `/dashboard`；`/permission` 要求 `admin` 角色或 `permission:page-level` 权限。
 未授权动态路径不会注册，访问时进入 404。前端权限只控制展示，后端仍必须检查接口权限。

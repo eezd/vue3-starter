@@ -49,7 +49,8 @@ Responses follow `{ code, data, message }`, with `code: 0` for success. Authenti
 | `GET /api/v1/users/me`     | Bearer token                   | `{ username: string, roles: string[], permissions?: string[] }` |
 
 Adapt API modules, types and callers together when connecting a different backend. Password policy belongs to the backend; no demo credentials are prefilled.
-HTTP 401 and business code 401 clear authentication and dynamic routes, redirect to login and reject the request.
+HTTP 401 and business code 401 for the current session clear authentication and dynamic routes, redirect to login and reject the request.
+After logout or a new login, outdated requests reject as Axios cancellations without overwriting the new identity, showing old errors or logging out the new session. Explicit cancellations also produce no error notification.
 
 The home route is `/dashboard`. `/permission` requires the `admin` role OR `permission:page-level` permission. Unregistered dynamic routes resolve to 404.
 Frontend permissions only control navigation and presentation; the backend must enforce authorization.
