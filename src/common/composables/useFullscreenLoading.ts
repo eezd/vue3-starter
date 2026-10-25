@@ -1,15 +1,11 @@
 import type { LoadingOptions } from "element-plus"
 
-interface UseFullscreenLoading {
-  <T extends (...args: Parameters<T>) => ReturnType<T>>(
-    fn: T,
-    options?: LoadingOptions
-  ): (...args: Parameters<T>) => Promise<ReturnType<T>>
-}
-
 interface LoadingInstance {
   close: () => void
 }
+
+// Element Plus 全屏服务可能返回同一实例，跨包装函数也要等所有调用结束。
+const activeInstances = new Map<LoadingInstance, { pending: number }>()
 
 const DEFAULT_OPTIONS = {
   lock: true,
@@ -23,14 +19,23 @@ const DEFAULT_OPTIONS = {
  * @param options LoadingOptions
  * @returns 返回一个新的函数，该函数返回一个 Promise
  */
-export const useFullscreenLoading: UseFullscreenLoading = (fn, options = {}) => {
-  let loadingInstance: LoadingInstance
-  return async (...args) => {
+export function useFullscreenLoading<Args extends unknown[], Result>(fn: (...args: Args) => Result, options: LoadingOptions = {}) {
+  return async (...args: Args): Promise<Awaited<Result>> => {
+    const loadingInstance = ElLoading.service({ ...DEFAULT_OPTIONS, ...options })
+    let activity = activeInstances.get(loadingInstance)
+    if (!activity) {
+      activity = { pending: 0 }
+      activeInstances.set(loadingInstance, activity)
+    }
+    activity.pending++
     try {
-      loadingInstance = ElLoading.service({ ...DEFAULT_OPTIONS, ...options })
       return await fn(...args)
     } finally {
-      loadingInstance.close()
+      activity.pending--
+      if (activity.pending === 0) {
+        activeInstances.delete(loadingInstance)
+        loadingInstance.close()
+      }
     }
   }
 }

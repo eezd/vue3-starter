@@ -10,6 +10,7 @@ A general frontend starter simplified from V3 Admin Vite, using Vue 3, TypeScrip
 - Small pagination, async select, fullscreen loading and page-title composables.
 
 Async selects expose the original loading failure through `error`, distinguishing failure from a successful empty list; the HTTP layer owns request notifications.
+The loading wrapper preserves operation results and errors. A shared fullscreen instance stays open until all associated calls finish.
 
 The starter has no admin shell, sidebar, tabs, layout settings, theme switching, promotional notifications or CRUD showcase. Registration is not implemented.
 

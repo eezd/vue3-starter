@@ -11,7 +11,7 @@ description: 使用本项目现有分页、异步下拉、全屏加载和页面�
 | --- | --- | --- |
 | usePagination | `src/common/composables/usePagination.ts` | 管理分页状态；通过 callback 和 watchPagination 组织首次查询及翻页，搜索调用 resetCurrentPage，接口字段按后端映射 |
 | useFetchSelect | `src/common/composables/useFetchSelect.ts` | 接收 api 函数，返回 loading/options/value/error；挂载时加载，失败在 error 中保留原始异常，不能把失败当成功空列表 |
-| useFullscreenLoading | `src/common/composables/useFullscreenLoading.ts` | 包装异步操作，在 finally 关闭全屏加载，操作失败继续 reject |
+| useFullscreenLoading | `src/common/composables/useFullscreenLoading.ts` | 包装同步或异步操作，透传参数、结果与异常；独立实例各自关闭，共享实例最后一个调用结束后关闭 |
 | useTitle | `src/common/composables/useTitle.ts` | 由路由后置钩子设置标题，复用现有 VITE_APP_TITLE |
 
 - 导入路径为 `@@/composables/useXxx`；页面私有组合函数放其 `composables/` 子目录。
