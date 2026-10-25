@@ -1,4 +1,4 @@
-# Vue3 Demo
+# Vue3 Starter
 
 A general frontend starter simplified from V3 Admin Vite, using Vue 3, TypeScript, Vite, Element Plus, Pinia, Vue Router, Axios and UnoCSS.
 

@@ -1,4 +1,4 @@
-# Vue3 Demo
+# Vue3 Starter
 
 一个从 V3 Admin Vite 精简的通用前端起步模板，使用 Vue 3、TypeScript、Vite、Element Plus、Pinia、Vue Router、Axios 和 UnoCSS。
 
