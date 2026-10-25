@@ -1,0 +1,8 @@
+---
+globs: "**/*.ts"
+alwaysApply: false
+---
+
+# TypeScript 开发入口
+
+遵循根目录 `AGENTS.md` 的类型、命名、依赖边界和接口契约约定；业务类型就近定义，生成声明通过插件更新。

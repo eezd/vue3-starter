@@ -1,0 +1,4 @@
+:root {
+  --v3-body-text-color: var(--el-text-color-primary);
+  --v3-body-bg-color: var(--el-bg-color-page);
+}

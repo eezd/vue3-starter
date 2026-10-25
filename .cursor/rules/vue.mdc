@@ -1,0 +1,8 @@
+---
+globs: "**/*.vue"
+alwaysApply: false
+---
+
+# Vue 开发入口
+
+遵循根目录 `AGENTS.md` 的“Vue、TypeScript 与样式”。页面私有组件随模块存放；小页面直接实现，复杂页面按职责拆分。需要路由或 CRUD 流程时按需读取 `.agents/skills/` 中对应技能。

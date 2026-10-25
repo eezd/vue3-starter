@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+
+# 目录与开发流程
+
+先读根目录 `AGENTS.md` 的“目录与职责”“依赖边界”和“命令”。业务代码收拢在 `src/pages/<module>/`，公共能力放 `src/common/`，按现有职责归属文件。
